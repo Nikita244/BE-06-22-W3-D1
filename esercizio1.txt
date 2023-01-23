@@ -1,0 +1,100 @@
+APPUNTI:
+
+INSERT INTO public."Clienti" ("Nome","Cognome","DataNascita","RegioneResidenza") values 
+('Gianna',  'Bianca', '1985-08-26', 'Liguria');
+ INSERT INTO public."Clienti" ("Nome","Cognome","DataNascita","RegioneResidenza") values 
+('Pino',  'Verdi', '1982-07-11', 'Lombardia')
+
+
+
+
+ALTER TABLE public."Fatture"
+    ADD CONSTRAINT fk_clienti FOREIGN KEY ("IdCliente") REFERENCES public."Clienti" ("NumeroCliente");
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+1- ESTRARRE NOME E COGNOME NATI NEL 1982
+
+SELECT "Nome","Cognome"
+FROM  public."Clienti" 
+where extract (year from "DataNascita") = 1982
+----------------------------------------------------------------------------------------------
+
+2- ESTRAE NUMERO FATTURE CON IVA AL 20%
+
+SELECT "NumeroFattura"
+FROM public."Fatture"
+WHERE "Iva" = 0.20;
+---------------------------------------------------------------------------------------------
+
+3- SOMMA FATTURE PER ANNO
+
+SELECT extract (year from "DataFattura") AS ANNO , 
+COUNT (*) AS NUMFATTURE,
+SUM("Importo") AS TOTIMPORTO
+FROM public."Fatture"
+
+GROUP BY extract (year from "DataFattura")
+--------------------------------------------------------------------------------------------
+
+4- PRODOTTI ATTIVATI NEL 2017 ANCORA IN PRODUZIONE O COMMERCIO
+
+SELECT *
+FROM public."Prodotti"
+WHERE ("InProduzione" = true OR "InCommercio" = true) AND EXTRACT(year from "DataAttivazione") = 2017
+--------------------------------------------------------------------------------------------
+
+5- Considerando solo le fatture con iva al 20% estrarre il num delle fatture ogni anno
+
+SELECT *
+FROM public."Fatture"
+WHERE "Iva" = 0.20  AND EXTRACT(year from "DataFattura") =  2022
+
+SELECT *
+FROM public."Fatture"
+WHERE "Iva" = 0.20  AND EXTRACT(year from "DataFattura") =  2023
+--------------------------------------------------------------------------------------------
+
+6- estrarre gli anni in cui sono state registrate piu di 2 fatture con tipologia A
+
+SELECT EXTRACT(YEAR FROM "DataFattura") as Anno,  COUNT(*) as QtFatture
+FROM public."Fatture"
+WHERE "Tipologia" = 'A'
+GROUP BY Anno
+HAVING COUNT(*) >= 2
+------------------------------------------------------------------------------------------
+
+7- importare l'elenco delle fatture (numero, importo, iva e data) con in aggiunta il nome del fornitore
+
+SELECT "NumeroFattura", "Importo","Iva","DataFattura","Denominazione"
+FROM public."Fatture" Fatture
+INNER JOIN public."Fornitori" Fornitori
+ON Fatture."NumeroFornitore"= Fornitori."NumeroFornitore"
+------------------------------------------------------------------------------------------
+
+8- Estrarre il numero dei clienti nati nel 1980 che hanno almeno una fattura superiore a 50 euro
+
+SELECT "NumeroCliente"
+FROM  public."Clienti" 
+JOIN public."Fatture"
+ON "IdCliente"= "NumeroCliente"
+where extract (year from "DataNascita") = 1980 AND "Importo" >= 50
+-----------------------------------------------------------------------------------------
+
+9- Estrarre una colonna di nome "Denominazione" contenente il nome, seguito da un carattere "-", seguito dal cognome, per i soli clienti residenti nella regione Lombardia
+
+SELECT CONCAT ("Nome", '-', "Cognome" ) AS DENOMINAZIONE, "RegioneResidenza" 
+FROM public."Clienti"
+WHERE "RegioneResidenza" = 'Lombardia'
+
+
+
+
+
+
